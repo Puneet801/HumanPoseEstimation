@@ -35,10 +35,13 @@ while cap.isOpened():
     if not success:
         break
     (h1, w1) = img.shape[:2]
+    # Getting center of the frame
     midx = w1//2
     midy = h1//2
+    
     # Convert image into RGB
     imgRGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    
     # Calling the hands object to the getting results
     results = hands.process(imgRGB)
     indicator = 0
@@ -69,9 +72,14 @@ while cap.isOpened():
                 
                 #if id ==4:
             #print("end")
+            
+            # Get the center of the hands detected
             cx = sum(x)//len(x)
             cy = sum(y)//len(y)
+            
+            # Mark the center of the hand
             cv2.circle(img, (cx, cy), 7, (255,0,255), cv2.FILLED)
+            
             mx.append(cx)
             my.append(cy)
             
@@ -80,10 +88,13 @@ while cap.isOpened():
 
             # Draw the landmarks and line of the each hands
             #mpDraw.draw_landmarks(img, handLms, mpHands.HAND_CONNECTIONS)
+          
+        # If only 1 hand is detected, use the last value
         if(len(mx)==1 and len(my)==1):
             left.append(left[-1])
             t+=1
-            
+        
+        #If 2 hands are detected, get their mean position and calculate distance from center
         if(len(mx)==2 and len(my)==2):
             t = t+1
             cx=(mx[0]+mx[1])//2
@@ -94,6 +105,7 @@ while cap.isOpened():
             flag = 0
             count = 0 
             if len(fin)>20:
+                # Getting mode of last 20 distances
                 data = collections.Counter(fin[-20:])
                 mode = data.most_common(1)
                 for f in fin[-20:]:
@@ -104,6 +116,7 @@ while cap.isOpened():
                     else:
                         flag = 0
                         break
+                # If all values lie in the range of +- 20 of mode value, we mark it as 0 work done
                 if count == 20 :
                     left.append(0) 
             else:
@@ -150,18 +163,9 @@ while cap.isOpened():
     if cv2.waitKey(1) & 0xFF == ord('q'): # Wait for 1 millisecond
         break
 
-# for i in range(len(left)-1,0,-1):
-#   if left[i] !=0:
-#     axis1.append(left.index(left[i]))
-#     break
-
-
-
 fig,ax = plt.subplots()
 left = savgol_filter(left, 121, 2)
 maxx = max(left)
-# maxx = max(left)
-# print(w)
 for i in range(len(left)):
     left[i] = left[i] / maxx
     if left[i] <= 0.3:
@@ -217,12 +221,3 @@ plt.show()
 
 cv2.destroyAllWindows()
 cap.release()
-
-# #INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
-# [32, 314, 641, 777, 1029, 1193, 1480, 1902, 2002, 2156, 2561, 2988, 3086, 3276, 3655, 4044, 4159, 4322, 4908, 4926, 5146, 5428, 6049, 6222, 6489] [255, 439, 727, 835, 1166, 1449, 1635, 1967, 2083, 2537, 2814, 3048, 3173, 3652, 3788, 4114, 4262, 4885, 4913, 4941, 5305, 5981, 6051, 6388, 6629]     
-# 835 32
-# 2083 1193
-# 3173 2561
-# 4262 3655
-# 5305 4908
-# [32.12, 35.6, 24.48, 24.28, 15.88]
